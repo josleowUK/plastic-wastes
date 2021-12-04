@@ -4,15 +4,11 @@
   // Set heights for page sections
   // adjustHeight();
 
-  // const regionGeoJson = d3.json("data/countries.geojson");
-  const countryTopoJson = d3.json("data/countries.topojson");
-  const wasteCSV = d3.json("data/plastic-waste-per-capita.csv");
+  const countryGeoJson = d3.json("data/countries.geojson");
+  // const countryTopoJson = d3.json("data/countries.topojson");
+  const wasteCSV = d3.json("data/waste.json");
 
-  Promise.all([countryTopoJson, wasteCSV])
-    .then(drawMap)
-    .catch((error) => {
-      console.log(error);
-    });
+  Promise.all([countryGeoJson, wasteCSV]).then(drawMap);
 
   function drawMap(data) {
     console.log(data);
@@ -30,35 +26,38 @@
       .style("top", 40)
       .style("left", 30);
 
-    const regionData = data[0];
-    const countryData = data[1];
+    const countryData = data[0];
+    console.log(countryData);
+    const wasteData = data[1];
 
     const projection = d3
       .geoNaturalEarth1()
-      .fitSize([width, height], regionData);
+      .fitSize([width, height], countryData);
 
     const path = d3.geoPath().projection(projection);
 
-    svg
+    const country = svg
       .append("g")
       .selectAll("path")
-      .data(regionData.features)
-      .join("path")
-      .attr("d", path)
-      .attr("class", "region");
-
-    const countriesGeoJson = topojson.feature(countryData, {
-      type: "GeometryCollection",
-      geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
-    });
-
-    const counties = svg
-      .append("g")
-      .selectAll("path")
-      .data(countriesGeoJson.features)
+      .data(countryData.features)
       .join("path")
       .attr("d", path)
       .attr("class", "country");
+
+    // const countriesGeoJson = topojson.feature(countryData, {
+    //   type: "GeometryCollection",
+    //   geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
+    // });
+
+    // const counties = svg
+    //   .append("g")
+    //   .selectAll("path")
+    //   .data(countriesGeoJson.features)
+    //   .join("path")
+    //   .attr("d", path)
+    //   .attr("class", "country");
+
+    //loop over countries and join waste data
 
     // Create  div for the tooltip and hide with opacity
     const tooltip = d3
@@ -79,10 +78,10 @@
     });
 
     // applies event listeners to our polygons for user interaction
-    counties
+    country
       .on("mouseover", (event, d) => {
         // when mousing over an element
-        // console.log(d);
+        console.log(d);
         d3.select(event.currentTarget).classed("hover", true).raise(); // select it, add a class name, and bring to front
         tooltip.classed("invisible", false).html(d.properties.sovereignt); // make tooltip visible and update info
       })
