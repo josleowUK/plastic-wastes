@@ -11,7 +11,7 @@
   Promise.all([countryTopoJson, wasteCSV]).then(drawMap);
 
   function drawMap(data) {
-    // console.log(data);
+    console.log(data);
     // declare a path generator using the projection
 
     // D3 time
@@ -27,7 +27,6 @@
       .style("left", 30);
 
     const countryData = data[0];
-
     const wasteData = data[1];
 
     const projection = d3
@@ -35,6 +34,19 @@
       .fitSize([width, height], countryData);
 
     const path = d3.geoPath().projection(projection);
+
+    // const country = svg
+    //   .append("g")
+    //   .selectAll("path")
+    //   .data(countryData.features)
+    //   .join("path")
+    //   .attr("d", path)
+    //   .attr("class", "country");
+
+    const geojson = topojson.feature(countryData, {
+      type: "GeometryCollection",
+      geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
+    });
 
     const country = svg
       .append("g")
@@ -44,20 +56,8 @@
       .attr("d", path)
       .attr("class", "country");
 
-    const geojson = topojson.feature(countryData, {
-      type: "GeometryCollection",
-      geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
-    });
-
-    // const counties = svg
-    //   .append("g")
-    //   .selectAll("path")
-    //   .data(countriesGeoJson.features)
-    //   .join("path")
-    //   .attr("d", path)
-    //   .attr("class", "country");
-
     //loop over countries and join waste data
+    //matching country with waste in country.
 
     // Create  div for the tooltip and hide with opacity
     const tooltip = d3
