@@ -4,14 +4,14 @@
   // Set heights for page sections
   // adjustHeight();
 
-  const countryGeoJson = d3.json("data/countries.geojson");
-  // const countryTopoJson = d3.json("data/countries.topojson");
+  // const countryGeoJson = d3.json("data/countries.geojson");
+  const countryTopoJson = d3.json("data/countries.topojson");
   const wasteCSV = d3.json("data/waste.json");
 
-  Promise.all([countryGeoJson, wasteCSV]).then(drawMap);
+  Promise.all([countryTopoJson, wasteCSV]).then(drawMap);
 
   function drawMap(data) {
-    console.log(data);
+    // console.log(data);
     // declare a path generator using the projection
 
     // D3 time
@@ -27,7 +27,7 @@
       .style("left", 30);
 
     const countryData = data[0];
-    console.log(countryData);
+
     const wasteData = data[1];
 
     const projection = d3
@@ -44,10 +44,10 @@
       .attr("d", path)
       .attr("class", "country");
 
-    // const countriesGeoJson = topojson.feature(countryData, {
-    //   type: "GeometryCollection",
-    //   geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
-    // });
+    const geojson = topojson.feature(countryData, {
+      type: "GeometryCollection",
+      geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
+    });
 
     // const counties = svg
     //   .append("g")
