@@ -1,0 +1,63 @@
+body {
+    font-family: "Open Sans", sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.8rem;
+    font-weight: 300;
+}
+
+h1 {
+    color: whitesmoke;
+    font-weight: 700;
+}
+
+/* #map {
+    border-bottom: 2px solid rgb(39, 0, 63);
+} */
+#map {
+    height: 100%;
+    position: relative
+}
+
+.region {
+    fill: none;
+    stroke: blue;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+}
+
+.country {
+    fill: #fac484;
+    stroke: #f8a07e;
+    vector-effect: non-scaling-stroke;
+}
+
+.country:hover {
+    fill: #f3e79b;
+    stroke: #eb7f86;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+}
+
+
+@media screen and(min-width: 768px) {
+    #map {
+        border-bottom: none;
+    }
+
+}
+
+
+#hero {
+    background: url('../images/plastic-waste-hero.jpg') no-repeat center center;
+
+    background-size: cover;
+    height: 85vh
+}
+
+#hero nav a {
+    color: black;
+}
+
+#footer {
+    font-size: 1rem;
+}
