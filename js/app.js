@@ -29,11 +29,7 @@
     const countryData = data[0];
     const wasteData = data[1];
 
-    const projection = d3
-      .geoNaturalEarth1()
-      .fitSize([width, height], countryData);
-
-    const path = d3.geoPath().projection(projection);
+   
 
     // const country = svg
     //   .append("g")
@@ -48,12 +44,22 @@
       geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
     });
 
+    const projection = d3
+    .geoNaturalEarth1()
+    .fitSize([width, height], geojson);
+
+  const path = d3.geoPath().projection(projection);
+
+    console.log(path)
+
     const country = svg
       .append("g")
       .selectAll("path")
-      .data(countryData.features)
+      .data(geojson.features)
       .join("path")
-      .attr("d", path)
+      .attr("d", d => {
+        console.log(path(d))
+        return path(d)})
       .attr("class", "country");
 
     //loop over countries and join waste data
