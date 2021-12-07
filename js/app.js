@@ -11,7 +11,7 @@
   Promise.all([countryTopoJson, wasteCSV]).then(drawMap);
 
   function drawMap(data) {
-    console.log(data);
+    // console.log(data);
     // declare a path generator using the projection
 
     // D3 time
@@ -29,12 +29,6 @@
     const countryData = data[0];
     const wasteData = data[1];
 
-    const projection = d3
-      .geoNaturalEarth1()
-      .fitSize([width, height], countryData);
-
-    const path = d3.geoPath().projection(projection);
-
     // const country = svg
     //   .append("g")
     //   .selectAll("path")
@@ -48,12 +42,21 @@
       geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
     });
 
+    const projection = d3.geoNaturalEarth1().fitSize([width, height], geojson);
+
+    const path = d3.geoPath().projection(projection);
+
+    // console.log(path);
+
     const country = svg
       .append("g")
       .selectAll("path")
-      .data(countryData.features)
+      .data(geojson.features)
       .join("path")
-      .attr("d", path)
+      .attr("d", (d) => {
+        // console.log(path(d));
+        return path(d);
+      })
       .attr("class", "country");
 
     //loop over countries and join waste data
@@ -65,7 +68,7 @@
       .append("div")
       .attr(
         "class",
-        "my-tooltip bg-success text-white py-1 px-2 rounded position-absolute invisible"
+        "my-tooltip text-black py-1 px-2 rounded position-absolute invisible"
       );
 
     // when mouse moves over the mapContainer
@@ -77,13 +80,49 @@
         .style("top", event.pageY - 30 + "px");
     });
 
+    //join data
+    // geojson.features.forEach((g) => {
+    //   // console.log(g.properties);
+    //   let { properties } = g;
+    //   let newProps = wasteData;
+    //   g.properties.waste = newProps;
+    // });
+    // //console.log("test ", geojson);
+
+    //join geojson and csv
+    for (let i of geojson.features) {
+      // console.log(i);
+      for (let j of wasteData) {
+        if (i.properties.adm0_a3 == j.iso3c) {
+          i.properties.wasteData = j;
+          break;
+        }
+      }
+    }
+    // console.log("test ", geojson);
+
     // applies event listeners to our polygons for user interaction
     country
       .on("mouseover", (event, d) => {
         // when mousing over an element
-        console.log(d);
+        // console.log(d);
         d3.select(event.currentTarget).classed("hover", true).raise(); // select it, add a class name, and bring to front
-        tooltip.classed("invisible", false).html(d.properties.sovereignt); // make tooltip visible and update info
+
+        const waste = d.properties.wasteData;
+        content =
+          `<h2 class="mb-0 pb-0">${d.properties.sovereignt}</h2><br>` +
+          `<strong>Population</strong>: ${waste.population_population_number_of_people}<br>` +
+          `<strong>${waste.total_msw_total_msw_generated_tons_year}</strong> tons per year<br><br>` +
+          `<strong>Type of Wastes in Percent</strong><br>` +
+          `<strong>Plastic</strong>: ${waste.composition_plastic_percent} <br>` +
+          `<strong>Glass</strong>: ${waste.composition_glass_percent} <br>` +
+          `<strong>Metal</strong>: ${waste.composition_metal_percent} <br>` +
+          `<strong>Paper & Cardboard</strong>: ${waste.composition_paper_cardboard_percent} <br>` +
+          `<strong>Rubber & Leather</strong>: ${waste.composition_rubber_leather_percent} <br>` +
+          `<strong>Wood</strong>: ${waste.composition_wood_percent} <br>` +
+          `<strong>Garden</strong>: ${waste.composition_yard_garden_green_waste_percent} <br>` +
+          `<strong>Organic Food</strong>: ${waste.composition_food_organic_waste_percent} <br>`;
+        tooltip.classed("invisible", false).html(content); // make tooltip visible and update info
       })
 
       .on("mouseout", (event, d) => {
@@ -137,7 +176,7 @@
     d3.selectAll("svg").remove();
 
     // use promise to call all data files, then send data to callback
-    Promise.all([regionGeoJson, countryTopoJson])
+    Promise.all([countryTopoJson, wasteCSV])
       .then(drawMap)
       .catch((error) => {
         console.log(error);
