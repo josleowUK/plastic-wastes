@@ -61,3 +61,16 @@ h1 {
 #footer {
     font-size: 1rem;
 }
+
+.my-tooltip {
+    background: white;
+    border: 1px solid #17a2b8
+}
+.my-tooltip h2 {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+strong {
+    font-weight: 700
+}
