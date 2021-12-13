@@ -110,10 +110,10 @@
 
         const waste = d.properties.wasteData;
         content =
-          `<h2 class="mb-0 pb-0">${d.properties.sovereignt}</h2><br>` +
+          `<h2 class="mb-0 pb-0">${d.properties.sovereignt}</h2>` +
           `<strong>Population</strong>: ${waste.population_population_number_of_people}<br>` +
-          `<strong>${waste.total_msw_total_msw_generated_tons_year}</strong> tons per year<br><br>` +
-          `<strong>Type of Wastes in Percent</strong><br>` +
+          `<strong>Total wastes generated</strong> ${waste.total_msw_total_msw_generated_tons_year} tons per year<br>` +
+          `<strong>Type of composition wastes in Percent below</strong><br>` +
           `<strong>Plastic</strong>: ${waste.composition_plastic_percent} <br>` +
           `<strong>Glass</strong>: ${waste.composition_glass_percent} <br>` +
           `<strong>Metal</strong>: ${waste.composition_metal_percent} <br>` +
