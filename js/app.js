@@ -1,9 +1,6 @@
 (function () {
   ("use strict");
 
-  // Set heights for page sections
-  // adjustHeight();
-
   // const countryGeoJson = d3.json("data/countries.geojson");
   const countryTopoJson = d3.json("data/countries.topojson");
   const wasteCSV = d3.json("data/waste.json");
@@ -29,18 +26,12 @@
     const countryData = data[0];
     const wasteData = data[1];
 
-    // const country = svg
-    //   .append("g")
-    //   .selectAll("path")
-    //   .data(countryData.features)
-    //   .join("path")
-    //   .attr("d", path)
-    //   .attr("class", "country");
-
     const geojson = topojson.feature(countryData, {
       type: "GeometryCollection",
       geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
     });
+
+    // console.log(geojson);
 
     const projection = d3.geoNaturalEarth1().fitSize([width, height], geojson);
 
@@ -59,9 +50,6 @@
       })
       .attr("class", "country");
 
-    //loop over countries and join waste data
-    //matching country with waste in country.
-
     // Create  div for the tooltip and hide with opacity
     const tooltip = d3
       .select(".mapSection")
@@ -79,15 +67,6 @@
         .style("left", event.pageX + 10 + "px")
         .style("top", event.pageY - 30 + "px");
     });
-
-    //join data
-    // geojson.features.forEach((g) => {
-    //   // console.log(g.properties);
-    //   let { properties } = g;
-    //   let newProps = wasteData;
-    //   g.properties.waste = newProps;
-    // });
-    // //console.log("test ", geojson);
 
     //join geojson and csv
     for (let i of geojson.features) {
@@ -109,9 +88,17 @@
         d3.select(event.currentTarget).classed("hover", true).raise(); // select it, add a class name, and bring to front
 
         const waste = d.properties.wasteData;
-        content =
-          `<h2 class="mb-0 pb-0">${d.properties.sovereignt}</h2>` +
-          `<strong>Population</strong>: ${waste.population_population_number_of_people}<br>` +
+
+        content = `<h2 class="mb-0 pb-0">${d.properties.sovereignt}</h2>`;
+
+        if (
+          waste.population_population_number_of_people != "NA" ||
+          waste.population_population_number_of_people != "undefined"
+        ) {
+          content += `<strong>Population</strong>: ${waste.population_population_number_of_people}<br>`;
+        }
+
+        content +=
           `<strong>Total wastes generated</strong> ${waste.total_msw_total_msw_generated_tons_year} tons per year<br>` +
           `<strong>Type of composition wastes in Percent below</strong><br>` +
           `<strong>Plastic</strong>: ${waste.composition_plastic_percent} <br>` +
@@ -131,25 +118,26 @@
         tooltip.classed("invisible", true); // hide the element
       });
 
+    // drawLegend(wasteData);
+    drawCountry(geojson);
     makeZoom(svg, width, height);
   }
 
-  // Utility functions
-  window.addEventListener("resize", adjustHeight);
+  function drawCountry(geojson) {
+    const colorScales = {};
+    let range = [];
+    geojson.features.forEach((g) => {
+      if (g.properties.gdp !== "NA") {
+        range.push(+g.properties.gdp);
+      } else {
+        range.push(0);
+      }
+    });
 
-  function adjustHeight() {
-    const mapSize = document.querySelector("#map"),
-      contentSize = document.querySelector("#content"),
-      removeFooter = document.querySelector("#footer").offsetHeight,
-      removeHeader = document.querySelector("#header").offsetHeight;
-    const resize = window.innerHeight - removeFooter - removeHeader;
-    if (window.innerWidth >= 768) {
-      contentSize.style.height = `${resize}px`;
-      mapSize.style.height = `${resize}px`;
-    } else {
-      contentSize.style.height = `${resize * 0.25}px`;
-      mapSize.style.height = `${resize * 0.75}px`;
-    }
+    colorScales.all = d3
+      .scaleLinear()
+      .domain(d3.extent(range))
+      .range(["white", "red"]);
   }
 
   function makeZoom(svg, width, height) {
