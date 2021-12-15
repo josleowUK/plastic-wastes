@@ -12,6 +12,7 @@ The thematic representation methods is choropleth map. The mouseover will show t
 
 ## Github
 
+https://josleowuk.github.io/
 https://josleowuk.github.io/wastes/
 
 ## Conclusion or Insight
