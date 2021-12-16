@@ -162,12 +162,5 @@
   window.addEventListener("resize", () => {
     // remove existing SVG
     d3.selectAll("svg").remove();
-
-    // use promise to call all data files, then send data to callback
-    Promise.all([countryTopoJson, wasteCSV])
-      .then(drawMap)
-      .catch((error) => {
-        console.log(error);
-      });
   });
 })();
