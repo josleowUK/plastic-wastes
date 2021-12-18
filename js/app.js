@@ -20,8 +20,8 @@
       .append("svg")
       .attr("width", width)
       .attr("height", height)
-      .style("top", 40)
-      .style("left", 30);
+      .style("top", 5)
+      .style("left", 5);
 
     const countryData = data[0];
     const wasteData = data[1];
@@ -46,11 +46,11 @@
       for (let j of wasteData) {
         if (i.properties.adm0_a3 == j.iso3c) {
           i.properties.wasteData = j;
-          
+
           // If variable has values
           if (j[trash] != 'NA') {
             // Push a normalized value to the array
-            dataQuantile.push(j[trash]/j[population])
+            dataQuantile.push(j[trash] / j[population])
           }
           break;
         } else {
@@ -59,13 +59,12 @@
           i.properties.wasteData[trash] = 'NA'
         }
       }
-  
     }
 
     // Create color scale for quantile
     const color = d3.scaleQuantile()
-    .domain(dataQuantile) 
-    .range(["white", "pink", "red"]) // Color range. Add more colors for more classes.
+      .domain(dataQuantile)
+      .range(["white", "pink", "red"]) // Color range. Add more colors for more classes.
 
     const projection = d3.geoNaturalEarth1().fitSize([width, height], geojson);
 
@@ -84,10 +83,10 @@
       })
       .attr("class", "country") // This style applies to countries missing data.
       .style('fill', d => {
-        
+
         // If country has data, return color scale for normalized value. 
         if (d.properties.wasteData[trash] != 'NA') {
-          return color(d.properties.wasteData[trash]/d.properties.wasteData[population]);
+          return color(d.properties.wasteData[trash] / d.properties.wasteData[population]);
         }
       })
 
@@ -109,7 +108,7 @@
         .style("top", event.pageY - 30 + "px");
     });
 
-    
+
 
     // applies event listeners to our polygons for user interaction
     country
@@ -153,6 +152,7 @@
     // drawCountry(geojson);
     // drawLegend(wasteData);
     makeZoom(svg, width, height);
+    scaleLegend(color)
   }
 
   function drawCountry(geojson) {
@@ -231,4 +231,5 @@
     // remove existing SVG
     d3.selectAll("svg").remove();
   });
+
 })();
