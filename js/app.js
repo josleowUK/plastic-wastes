@@ -20,8 +20,8 @@
       .append("svg")
       .attr("width", width)
       .attr("height", height)
-      .style("top", 40)
-      .style("left", 30);
+      .style("top", 5)
+      .style("left", 5);
 
     const countryData = data[0];
     const wasteData = data[1];
@@ -32,6 +32,39 @@
     });
 
     // console.log(geojson);
+
+    // Set which variables to use
+    const trash = "total_msw_total_msw_generated_tons_year"
+    const population = "population_population_number_of_people"
+
+    // Create empty array for classification
+    let dataQuantile = []
+
+    //join geojson and csv
+    for (let i of geojson.features) {
+      // console.log(i);
+      for (let j of wasteData) {
+        if (i.properties.adm0_a3 == j.iso3c) {
+          i.properties.wasteData = j;
+
+          // If variable has values
+          if (j[trash] != 'NA') {
+            // Push a normalized value to the array
+            dataQuantile.push(j[trash] / j[population])
+          }
+          break;
+        } else {
+          // If no data or undefined, create a new object and add 'NA
+          i.properties.wasteData = {}
+          i.properties.wasteData[trash] = 'NA'
+        }
+      }
+    }
+
+    // Create color scale for quantile
+    const color = d3.scaleQuantile()
+      .domain(dataQuantile)
+      .range(["white", "pink", "red"]) // Color range. Add more colors for more classes.
 
     const projection = d3.geoNaturalEarth1().fitSize([width, height], geojson);
 
@@ -48,7 +81,14 @@
         // console.log(path(d));
         return path(d);
       })
-      .attr("class", "country");
+      .attr("class", "country") // This style applies to countries missing data.
+      .style('fill', d => {
+
+        // If country has data, return color scale for normalized value. 
+        if (d.properties.wasteData[trash] != 'NA') {
+          return color(d.properties.wasteData[trash] / d.properties.wasteData[population]);
+        }
+      })
 
     // Create  div for the tooltip and hide with opacity
     const tooltip = d3
@@ -68,17 +108,7 @@
         .style("top", event.pageY - 30 + "px");
     });
 
-    //join geojson and csv
-    for (let i of geojson.features) {
-      // console.log(i);
-      for (let j of wasteData) {
-        if (i.properties.adm0_a3 == j.iso3c) {
-          i.properties.wasteData = j;
-          break;
-        }
-      }
-    }
-    // console.log("test ", geojson);
+
 
     // applies event listeners to our polygons for user interaction
     country
@@ -122,6 +152,7 @@
     // drawCountry(geojson);
     // drawLegend(wasteData);
     makeZoom(svg, width, height);
+    scaleLegend(color)
   }
 
   function drawCountry(geojson) {
@@ -200,4 +231,5 @@
     // remove existing SVG
     d3.selectAll("svg").remove();
   });
+
 })();
