@@ -1,16 +1,34 @@
 (function () {
   ("use strict");
 
-  // const countryGeoJson = d3.json("data/countries.geojson");
-  const countryTopoJson = d3.json("data/countries.topojson");
+  const countryTopoJson = d3.json("data/countries.json");
   const wasteCSV = d3.json("data/waste.json");
 
-  Promise.all([countryTopoJson, wasteCSV]).then(drawMap);
+  Promise.all([countryTopoJson, wasteCSV])
+    .then(processData)
+    .catch((error) => {
+      console.log(error);
+    });
 
-  function drawMap(data) {
+  // Create  div for the tooltip and hide with opacity
+  const tooltip = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  function processData(data) {
     // console.log(data);
-    // declare a path generator using the projection
+    const countryData = data[0];
+    const wasteData = data[1];
+    const geojson = topojson.feature(countryData, {
+      type: "GeometryCollection",
+      geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
+    });
+    drawMap(geojson, wasteData);
+  }
 
+  function drawMap(geojson, wasteData) {
     // D3 time
     const mapContainer = d3.select("#map");
     const width = mapContainer.node().offsetWidth - 60;
@@ -20,35 +38,8 @@
       .append("svg")
       .attr("width", width)
       .attr("height", height)
-      .style("top", 40)
-      .style("left", 30);
-
-    const countryData = data[0];
-    const wasteData = data[1];
-
-    const geojson = topojson.feature(countryData, {
-      type: "GeometryCollection",
-      geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
-    });
-
-    // console.log(geojson);
-
-    const projection = d3.geoNaturalEarth1().fitSize([width, height], geojson);
-
-    const path = d3.geoPath().projection(projection);
-
-    // console.log(path);
-
-    const country = svg
-      .append("g")
-      .selectAll("path")
-      .data(geojson.features)
-      .join("path")
-      .attr("d", (d) => {
-        // console.log(path(d));
-        return path(d);
-      })
-      .attr("class", "country");
+      .style("top", 5)
+      .style("left", 5);
 
     // Create  div for the tooltip and hide with opacity
     const tooltip = d3
@@ -61,12 +52,16 @@
 
     // when mouse moves over the mapContainer
     mapContainer.on("mousemove", (event) => {
-      // update the position of the tooltip
-      // console.log(event);
       tooltip
         .style("left", event.pageX + 10 + "px")
         .style("top", event.pageY - 30 + "px");
     });
+
+    const trashTotal = "total_msw_total_msw_generated_tons_year";
+
+    const population = "population_population_number_of_people";
+
+    let dataQuantile = [];
 
     //join geojson and csv
     for (let i of geojson.features) {
@@ -74,18 +69,49 @@
       for (let j of wasteData) {
         if (i.properties.adm0_a3 == j.iso3c) {
           i.properties.wasteData = j;
+          if (j[trashTotal] != "NA") {
+            dataQuantile.push(j[trashTotal] / j[population]);
+          }
           break;
+        } else {
+          i.properties.wasteData = {};
+          i.properties.wasteData[trashTotal] = "NA";
         }
       }
     }
-    // console.log("test ", geojson);
+
+    const color = d3
+      .scaleQuantile()
+      .domain(dataQuantile)
+      .range(["white", "pink", "red", "purple", "orange"]);
+
+    const projection = d3.geoNaturalEarth1().fitSize([width, height], geojson);
+
+    const path = d3.geoPath().projection(projection);
+
+    const country = svg
+      .append("g")
+      .selectAll("path")
+      .data(geojson.features)
+      .join("path")
+      .attr("d", (d) => {
+        // console.log(path(d));
+        return path(d);
+      })
+      .attr("class", "country")
+      .style("fill", (d) => {
+        if (d.properties.wasteData[trashTotal] != "NA") {
+          return color(
+            d.properties.wasteData[trashTotal] /
+              d.properties.wasteData[population]
+          );
+        }
+      });
 
     // applies event listeners to our polygons for user interaction
     country
       .on("mouseover", (event, d) => {
-        // when mousing over an element
-        // console.log(d);
-        d3.select(event.currentTarget).classed("hover", true).raise(); // select it, add a class name, and bring to front
+        d3.select(event.currentTarget).classed("hover", true).raise();
 
         const waste = d.properties.wasteData;
 
@@ -118,64 +144,10 @@
         tooltip.classed("invisible", true); // hide the element
       });
 
-    // drawLegend(wasteData);
-    // drawCountry(geojson);
-    // drawLegend(wasteData);
     makeZoom(svg, width, height);
   }
 
-  function drawCountry(geojson) {
-    const colorScales = {};
-    let range = [];
-    geojson.features.forEach((g) => {
-      if (g.properties.gdp !== "NA") {
-        range.push(+g.properties.gdp);
-      } else {
-        range.push(0);
-      }
-    });
-
-    colorScales.all = d3
-      .scaleLinear()
-      .domain(d3.extent(range))
-      .range(["white", "red"]);
-  }
-
-  function drawLegend(waste) {
-    console.log(waste);
-    var legendRectSize = 18;
-    var legendSpacing = 4;
-    var color = d3.scaleOrdinal(d3.schemeCategory20b);
-    var legend = svg
-      .selectAll(".legend")
-      .data(color.domain())
-      .enter()
-      .append("g")
-      .attr("class", "legend")
-      .attr("transform", function (d, i) {
-        var height = legendRectSize + legendSpacing;
-        var offset = (height * color.domain().length) / 2;
-        var horz = -2 * legendRectSize;
-        var vert = i * height - offset;
-        return "translate(" + horz + "," + vert + ")";
-      });
-
-    legend
-      .append("rect")
-      .attr("width", legendRectSize)
-      .attr("height", legendRectSize)
-      .style("fill", color)
-      .style("stroke", color);
-
-    legend
-      .append("text")
-      .attr("x", legendRectSize + legendSpacing)
-      .attr("y", legendRectSize - legendSpacing)
-      .text(function (d) {
-        //add waste.gdp to display?
-        return d;
-      });
-  }
+  function drawLegend() {}
 
   function makeZoom(svg, width, height) {
     const zoom = d3
@@ -199,5 +171,6 @@
   window.addEventListener("resize", () => {
     // remove existing SVG
     d3.selectAll("svg").remove();
+    document.getElementById("map").innerHTML = "View map only on Desktop";
   });
 })();
