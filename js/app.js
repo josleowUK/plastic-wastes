@@ -26,6 +26,7 @@
       geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
     });
     drawMap(geojson, wasteData);
+    drawLegend(geojson, wasteData);
   }
 
   function drawMap(geojson, wasteData) {
@@ -147,7 +148,67 @@
     makeZoom(svg, width, height);
   }
 
-  function drawLegend() {}
+  function drawLegend(geojson, wasteData) {
+    const values = [];
+    const totalVal = "gdp";
+    const population = "population_population_number_of_people";
+
+    //join geojson and csv
+    for (let i of geojson.features) {
+      // console.log(i);
+      for (let j of wasteData) {
+        if (i.properties.adm0_a3 == j.iso3c) {
+          i.properties.wasteData = j;
+          if (j[totalVal] != "NA") {
+            values.push(j[totalVal] / j[population]);
+          }
+          break;
+        } else {
+          i.properties.wasteData = {};
+          i.properties.wasteData[totalVal] = "NA";
+        }
+      }
+    }
+
+    var color = d3.scaleOrdinal().domain(values).range(d3.schemeSet1);
+    //svg legend rect not working? how to list only max 10. not sure how to do similar xxx - xxx
+    var size = 20;
+    var svg = d3.select("#legend");
+    svg
+      .selectAll("g")
+      .data(values)
+      .enter()
+      .append("rect")
+      .attr("x", 100)
+      .attr("y", function (d, i) {
+        return 100 + i * (size + 5);
+      })
+      .attr("width", size)
+      .attr("height", size)
+      .style("fill", function (d) {
+        // console.log(color(d));
+        return color(d);
+      });
+
+    svg
+      .selectAll("g")
+      .data(values)
+      .enter()
+      .append("GDP")
+      .attr("x", 100 + size * 1.2)
+      .attr("y", function (d, i) {
+        return 100 + i * (size + 5) + size / 2;
+      })
+      .style("fill", function (d) {
+        // console.log(d);
+        return color(d);
+      })
+      .text(function (d) {
+        return d;
+      })
+      .attr("text-anchor", "left")
+      .style("alignment-baseline", "middle");
+  }
 
   function makeZoom(svg, width, height) {
     const zoom = d3
