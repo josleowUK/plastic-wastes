@@ -1,7 +1,6 @@
 ## Critique One
 
-https://chels-map.github.io/ky_photoperiod_2021
-
+[https://chels-map.github.io/ky_photoperiod_2021](https://chels-map.github.io/ky_photoperiod_2021)
 Colors vary from month when slide from Jan to Dec.
 However color is a bit monotone in certain months.
 The legend is too long but It seems to indicate something on map. I am not sure what Photoperiod is. It would be nice if there is short description so we know what it is about.
@@ -13,7 +12,7 @@ It would be better if the map is enlarged on full view instead of 2 white space 
 
 ## Critique Two
 
-https://oklein1.github.io/NYC_Subway_DijkstraGTFS/
+[https://oklein1.github.io/NYC_Subway_DijkstraGTFS/](https://oklein1.github.io/NYC_Subway_DijkstraGTFS/)
 
 Interesting that it show the path - it feels like train journey if I am not wrong.
 
@@ -24,3 +23,17 @@ When select the start and end, it maps the journey and the font size is too larg
 
 Suggestion:
 Make the map large enough to cover the map div. Make the stops in the smaller font so we do not have to scroll down to the end of journey. Should clear the dropdown options automatically and then re-map the path and journey. The circles on the different color lines should show the popup where it is.
+
+## Critique Three
+
+[https://hoyeonjeong.github.io/kyagronomicinfo/](https://hoyeonjeong.github.io/kyagronomicinfo/)
+
+The map is a good work. Nothing I can say more except that it is not mobile friendly and swiping colors do not change.
+
+Suggestion:
+Swiping to dark side for example, the colors on map should also change according to the light or dark side. If it is light, map colors revert. 
+
+
+
+
+
