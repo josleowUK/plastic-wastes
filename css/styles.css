@@ -10,14 +10,13 @@ h1 {
     font-weight: 700;
 }
 
-/* #map {
-    border-bottom: 2px solid rgb(39, 0, 63);
-} */
 #map {
     height: 100%;
     position: relative
 }
-
+#map h2 {
+    font-size: 1.5rem
+}
 .region {
     fill: none;
     stroke: blue;
@@ -48,15 +47,24 @@ h1 {
 
 
 #hero {
-    background: url('../images/plastic-waste-hero.jpg') no-repeat center center;
+    background: url('../images/waste-hero.jpeg') no-repeat center center;
 
     background-size: cover;
-    height: 85vh
+    height: 50vh
 }
 
 #hero nav a {
-    color: black;
+    color: #fff;
+    transition: color 0.3ms
 }
+#hero nav a:hover {
+    color: #f8a07e
+}
+.navbar-toggler {
+    color: #000;
+    background: #fff
+}
+
 
 #footer {
     font-size: 1rem;
@@ -73,4 +81,10 @@ h1 {
 
 strong {
     font-weight: 700
+}
+
+@media(max-width:768px) {
+    #map {
+        padding: 0 20px
+    }
 }
