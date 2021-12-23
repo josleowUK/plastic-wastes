@@ -88,3 +88,8 @@ strong {
         padding: 0 20px
     }
 }
+
+#legend {
+    height: 200px;
+    width: 100%;
+}
