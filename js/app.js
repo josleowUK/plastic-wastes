@@ -3,6 +3,8 @@
 
   const countryTopoJson = d3.json("data/countries.json");
   const wasteCSV = d3.json("data/waste.json");
+  const trashTotal = "total_msw_total_msw_generated_tons_year";
+  const population = "population_population_number_of_people";
 
   Promise.all([countryTopoJson, wasteCSV])
     .then(processData)
@@ -26,7 +28,7 @@
       geometries: countryData.objects.ne_50m_admin_0_countries_lakes.geometries,
     });
     drawMap(geojson, wasteData);
-    drawLegend(geojson, wasteData);
+    // drawLegend(geojson, wasteData);
   }
 
   function drawMap(geojson, wasteData) {
@@ -58,10 +60,6 @@
         .style("top", event.pageY - 30 + "px");
     });
 
-    const trashTotal = "total_msw_total_msw_generated_tons_year";
-
-    const population = "population_population_number_of_people";
-
     let dataQuantile = [];
 
     //join geojson and csv
@@ -84,7 +82,8 @@
     const color = d3
       .scaleQuantile()
       .domain(dataQuantile)
-      .range(["white", "pink", "red", "purple", "orange"]);
+      // Use a sequential color scheme. check out https://gka.github.io/palettes
+      .range(['#ffffe0', '#e9c5b3', '#d08d88', '#b4535f', '#94003a']);
 
     const projection = d3.geoNaturalEarth1().fitSize([width, height], geojson);
 
@@ -146,66 +145,91 @@
       });
 
     makeZoom(svg, width, height);
+    drawLegend(color, geojson);
   }
 
-  function drawLegend(geojson, wasteData) {
-    const values = [];
-    const totalVal = "gdp";
-    const population = "population_population_number_of_people";
+  function drawLegend(color, geojson) {
 
-    //join geojson and csv
-    for (let i of geojson.features) {
-      // console.log(i);
-      for (let j of wasteData) {
-        if (i.properties.adm0_a3 == j.iso3c) {
-          i.properties.wasteData = j;
-          if (j[totalVal] != "NA") {
-            values.push(j[totalVal] / j[population]);
-          }
-          break;
-        } else {
-          i.properties.wasteData = {};
-          i.properties.wasteData[totalVal] = "NA";
-        }
-      }
-    }
+        // get breaks for legend
+        const data = color.quantiles()
+        // add zero for first class
+        data.unshift(0);
+      const upper = color.domain().pop().toFixed(2);
 
-    var color = d3.scaleOrdinal().domain(values).range(d3.schemeSet1);
+   
+    // const values = [];
+    // const totalVal = "gdp";
+    // const population = "population_population_number_of_people";
+
+    // //join geojson and csv
+    // for (let i of geojson.features) {
+    //   // console.log(i);
+    //   for (let j of wasteData) {
+    //     if (i.properties.adm0_a3 == j.iso3c) {
+    //       i.properties.wasteData = j;
+    //       if (j[totalVal] != "NA") {
+    //         values.push(j[totalVal] / j[population]);
+    //       }
+    //       break;
+    //     } else {
+    //       i.properties.wasteData = {};
+    //       i.properties.wasteData[totalVal] = "NA";
+    //     }
+    //   }
+    // }
+
+    // var color = d3.scaleOrdinal().domain(values).range(d3.schemeSet1);
     //svg legend rect not working? how to list only max 10. not sure how to do similar xxx - xxx
     var size = 20;
-    var svg = d3.select("#legend");
+    var legend = d3.select("#legend");
+    const width = legend.node().offsetWidth;
+
+    // append a new SVG element to the container
+    const svg = legend
+      .append('svg')
+      .attr('width', width)
+      .attr('height', 200)
+      // .attr('transform', `translate(0, 0)`)
+      
     svg
-      .selectAll("g")
-      .data(values)
+      .append('g')
+      .selectAll("path")
+      .data(data)
       .enter()
       .append("rect")
-      .attr("x", 100)
+      .attr("x", 5)
       .attr("y", function (d, i) {
-        return 100 + i * (size + 5);
+        return 5 + i * (size + 5);
       })
       .attr("width", size)
       .attr("height", size)
       .style("fill", function (d) {
-        // console.log(color(d));
-        return color(d);
-      });
+        
+          return color(d)
+        }
+      )
+      
 
     svg
-      .selectAll("g")
-      .data(values)
+      .selectAll("label")
+      .data(data)
       .enter()
-      .append("GDP")
-      .attr("x", 100 + size * 1.2)
+      .append("text")
+      .attr("x", 30)
       .attr("y", function (d, i) {
-        return 100 + i * (size + 5) + size / 2;
+        return 15 + (i * (size + 5));
       })
-      .style("fill", function (d) {
-        // console.log(d);
-        return color(d);
-      })
-      .text(function (d) {
-        return d;
-      })
+
+      .text(function (d, i) {
+        console.log(i)
+        let label = ``;
+        if (i == data.length - 1) {
+          label =  `${data[i].toFixed(2)} - ${upper}`;
+      } else {
+        label = `${data[i].toFixed(2)} - ${data[i + 1].toFixed(2)}`;;
+      }
+      return label
+    })
       .attr("text-anchor", "left")
       .style("alignment-baseline", "middle");
   }

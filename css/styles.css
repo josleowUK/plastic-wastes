@@ -25,7 +25,7 @@ h1 {
 }
 
 .country {
-    fill: #fac484;
+    fill: #d4d4d4;
     stroke: #f8a07e;
     vector-effect: non-scaling-stroke;
 }
@@ -87,4 +87,9 @@ strong {
     #map {
         padding: 0 20px
     }
+}
+
+#legend {
+    height: 200px;
+    width: 100%;
 }
