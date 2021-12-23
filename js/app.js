@@ -84,7 +84,8 @@
     const color = d3
       .scaleQuantile()
       .domain(dataQuantile)
-      .range(["white", "pink", "red", "purple", "orange"]);
+      // Use a sequential color scheme. check out https://gka.github.io/palettes
+      .range(['#ffffe0', '#e9c5b3', '#d08d88', '#b4535f', '#94003a']);
 
     const projection = d3.geoNaturalEarth1().fitSize([width, height], geojson);
 
